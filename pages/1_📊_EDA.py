@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 from src.eda import (
     get_gender_description,
     get_age_description,
@@ -10,7 +12,7 @@ from src.eda import (
     get_family_size_description
 )
 
-# Carga del DataFrame
+# Carga del DataFrame original
 @st.cache_data
 def load_data():
     return pd.read_csv("data/Customers.csv")
@@ -21,11 +23,11 @@ st.title("Análisis Exploratorio de Datos (EDA)")
 # Cargar datos
 df = load_data()
 
-
+# Vista previa del dataset
 st.write("Vista previa del dataset")
 st.dataframe(pd.concat([df.head(), df.tail()]))
 
-# Informacion de las columnas
+# Información de las columnas
 if st.checkbox("Mostrar descripción del Género"):
     gender_description, gender_counts = get_gender_description(df)
     st.write("Información estadística del Género:")
@@ -62,3 +64,42 @@ if st.checkbox("Mostrar descripción del Tamaño de la Familia"):
     family_size_description = get_family_size_description(df)
     st.write("Información estadística del Tamaño de la Familia:")
     st.table(family_size_description)
+
+# Agregar la preparación de los datos con una descripción
+st.write("""
+### Preparación de los datos para su posterior análisis
+
+Primero se verifica si hay valores perdidos en el conjunto de datos, y en dado caso estos se encuentren en columnas o variables que no serán de utilidad, estas columnas pueden ser removidas. Para este análisis en específico se decidió remover del conjunto de datos las siguientes columnas:
+
+* Profession
+* CustomerID
+
+Ya que no son de interés para el análisis que se desea realizar.
+""")
+
+# Eliminar las columnas no relevantes
+df_clean = df.drop(columns=['Profession', 'CustomerID'])
+
+# Mostrar información del dataset limpio (sin columnas eliminadas)
+st.write("Información del dataset limpio:")
+info_clean = pd.DataFrame({
+    'Column': df_clean.columns,
+    'Non-Null Count': df_clean.notnull().sum(),
+    'Dtype': df_clean.dtypes,
+})
+info_clean['Non-Null Count'] = info_clean['Non-Null Count'].astype(int)
+st.dataframe(info_clean)
+
+# Matriz general de correlaciones de edad, ingreso anual, puntuaje de gasto, tamaño de familia
+st.write("""
+### Matriz general de correlaciones de edad, ingreso anual, puntuaje de gasto, tamaño de familia
+""")
+
+
+correlation_matrix = df_clean[['Age','Annual Income ($)','Spending Score (1-100)', 'Family Size']].corr()
+
+# Graficar la matriz de correlación
+plt.figure(figsize=(8, 6))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
+plt.title('Matriz de Correlación')
+st.pyplot(plt)
