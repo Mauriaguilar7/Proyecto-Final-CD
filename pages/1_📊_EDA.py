@@ -90,11 +90,14 @@ info_clean = pd.DataFrame({
 info_clean['Non-Null Count'] = info_clean['Non-Null Count'].astype(int)
 st.dataframe(info_clean)
 
+# Verificando valores perdidos en el dataset limpio
+st.write("Valores perdidos en el dataset limpio:")
+st.write(df_clean.isna().sum())
+
 # Matriz general de correlaciones de edad, ingreso anual, puntuaje de gasto, tamaño de familia
 st.write("""
 ### Matriz general de correlaciones de edad, ingreso anual, puntuaje de gasto, tamaño de familia
 """)
-
 
 correlation_matrix = df_clean[['Age','Annual Income ($)','Spending Score (1-100)', 'Family Size']].corr()
 
